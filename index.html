@@ -381,13 +381,21 @@ function drawChart(id, dataMap) {
     const sortedLabels = Object.keys(dataMap).sort((a,b) => dataMap[b] - dataMap[a]).slice(0, 8);
     const sortedData = sortedLabels.map(l => dataMap[l]);
 
+    // กำหนดชุดสีเริ่มต้น (สีฟ้าเดิม)
+    let colorPalette = ['#0c4a6e', '#0284c7', '#0ea5e9', '#38bdf8', '#7dd3fc', '#bae6fd', '#e0f2fe', '#f0f9ff'];
+
+    // ถ้าเป็นกราฟรายบุคคล ให้เปลี่ยนเป็นชุดสีเขียว
+    if (id === 'chartStaff') {
+        colorPalette = ['#047857', '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5', '#ecfdf5'];
+    }
+
     chartInstances[id] = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: sortedLabels,
             datasets: [{
                 data: sortedData,
-                backgroundColor: ['#0c4a6e', '#0284c7', '#0ea5e9', '#38bdf8', '#7dd3fc', '#bae6fd', '#e0f2fe', '#f0f9ff'],
+                backgroundColor: colorPalette, // ใช้ชุดสีที่กำหนดตามเงื่อนไข
                 borderWidth: 2,
                 hoverOffset: 10
             }]
