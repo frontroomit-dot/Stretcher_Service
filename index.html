@@ -347,17 +347,38 @@ function renderCharts(data, sK, dK) {
 function renderTable(data, dK) {
     const thead = document.getElementById("thead");
     const tbody = document.getElementById("tbody");
-    if (!data.length) { tbody.innerHTML = "<tr><td colspan='99'>ไม่พบข้อมูล</td></tr>"; return; }
     
-    // กรอง Timestamp ออก
+    if (!data.length) { 
+        tbody.innerHTML = "<tr><td colspan='99' style='text-align:center; padding:20px;'>ไม่พบข้อมูลที่ค้นหา</td></tr>"; 
+        return; 
+    }
+    
+    // 1. ดึงหัวข้อ (Headers) มาแสดง ยกเว้น Timestamp
     const headers = Object.keys(data[0]).filter(h => !h.toLowerCase().includes("timestamp") && !h.includes("ประทับเวลา"));
-    thead.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join('') + "</tr>";
-    tbody.innerHTML = data.slice(0, 100).map(row => "<tr>" + headers.map(h => {
-        let val = row[h] || "-";
-        return h === dK ? `<td><span class="badge-dept">${val}</span></td>` : `<td>${val}</td>`;
-    }).join('') + "</tr>").join('');
+    
+    // 2. สร้างหัวตาราง (เพิ่มคอลัมน์ "ที่" ไว้หน้าสุด)
+    thead.innerHTML = `
+        <tr>
+            <th style="width: 50px; text-align: center;">ที่</th>
+            ${headers.map(h => `<th>${h}</th>`).join('')}
+        </tr>`;
+    
+    // 3. สร้างแถวข้อมูล (เพิ่มตัวเลขลำดับ index + 1)
+    tbody.innerHTML = data.slice(0, 100).map((row, index) => {
+        const rowCells = headers.map(h => {
+            let val = row[h] || "-";
+            // ถ้าเป็นคอลัมน์แผนก ให้ใส่ Badge สีฟ้า
+            if (h === dK) return `<td><span class="badge-dept">${val}</span></td>`;
+            return `<td>${val}</td>`;
+        }).join('');
+        
+        return `
+            <tr>
+                <td style="text-align: center; color: #94a3b8; font-size: 0.85rem;">${index + 1}</td>
+                ${rowCells}
+            </tr>`;
+    }).join('');
 }
-
 function filterBy(range) {
     document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
     document.getElementById(`btn-${range}`).classList.add('active');
