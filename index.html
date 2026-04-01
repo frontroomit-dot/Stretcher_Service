@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stretcher Service Dashboard - รพ.ค่ายจักรพงษ์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #0c4a6e; /* Midnight Blue */
+            --secondary-color: #0284c7; /* Medical Blue */
+            --accent-color: #0ea5e9;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --bg-body: #f0f4f8;
+            --card-bg: #ffffff;
+            --header-gradient: linear-gradient(135deg, #0c4a6e 0%, #0284c7 100%);
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-body);
+            color: #1e293b;
+        }
+
+        /* --- Loading Screen --- */
+        #loadingOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 60px; height: 60px;
+            border: 6px solid #e2e8f0;
+            border-top: 6px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- Header Section --- */
+        .header-banner {
+            background: var(--header-gradient);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: -40px;
+        }
+        .header-banner h1 { margin: 0; font-size: 2rem; font-weight: 700; letter-spacing: 1px; }
+        .header-banner p { opacity: 0.9; margin-top: 5px; font-weight: 300; }
+        .hospital-icon { font-size: 3rem; margin-bottom: 10px; color: #fff; }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+
+        /* --- Summary Cards --- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card-icon {
+            width: 60px; height: 60px;
+            border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-right: 20px;
+        }
+        .icon-blue { background: #e0f2fe; color: #0369a1; }
+        .icon-green { background: #dcfce7; color: #15803d; }
+        .icon-amber { background: #fef3c7; color: #b45309; }
+
+        .card-info h3 { margin: 0; font-size: 0.9rem; color: #64748b; text-transform: uppercase; }
+        .card-info .value { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 2px 0; }
+        .card-info .sub-text { font-size: 0.85rem; color: #94a3b8; }
+
+        /* --- Charts --- */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .chart-card h4 { margin-top: 0; margin-bottom: 20px; color: var(--primary-color); font-size: 1.1rem; border-left: 4px solid var(--secondary-color); padding-left: 10px; }
+        .chart-wrapper { height: 280px; position: relative; }
+
+        /* --- Controls --- */
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            display: flex; flex-wrap: wrap; gap: 15px;
+            margin-bottom: 25px; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .btn-group { display: flex; background: #f1f5f9; padding: 5px; border-radius: 10px; }
+        button {
+            padding: 8px 20px; border: none; border-radius: 8px;
+            cursor: pointer; background: transparent; color: #64748b;
+            font-weight: 600; transition: 0.3s;
+        }
+        button.active { background: white; color: var(--secondary-color); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .search-box {
+            position: relative; flex: 1; min-width: 250px;
+        }
+        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        input[type="text"] {
+            width: 100%; padding: 10px 15px 10px 40px;
+            border: 1px solid #e2e8f0; border-radius: 10px; outline: none;
+            box-sizing: border-box; transition: 0.3s;
+        }
+        input[type="text"]:focus { border-color: var(--secondary-color); ring: 2px solid #bae6fd; }
+
+        /* --- Table --- */
+        .table-container {
+            background: white; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc; padding: 18px; text-align: left; color: #475569; font-size: 0.9rem; }
+        td { padding: 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f0f9ff; }
+        .badge-dept { 
+            background: #e0f2fe; color: #0369a1; padding: 5px 12px; 
+            border-radius: 8px; font-weight: 600; font-size: 0.8rem;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .header-banner h1 { font-size: 1.5rem; }
+            .container { padding: 10px; }
+            .card { padding: 15px; }
+        }
+
+        /* --- Footer Style --- */
+        footer {
+            margin-top: 50px;
+            padding: 40px 20px;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        .footer-about h4 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-about p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0;
+            text-align: justify;
+        }
+
+        .footer-info {
+            text-align: right;
+            font-size: 0.85rem;
+        }
+
+        .footer-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .footer-info li {
+            margin-bottom: 5px;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 30px auto 0;
+            padding-top: 20px;
+            border-top: 1px dashed #e2e8f0;
+            text-align: center;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .footer-info {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+    <div style="margin-top: 15px; color: #0c4a6e; font-weight: 600;">กำลังประมวลผลข้อมูล...</div>
+</div>
+
+<header class="header-banner">
+    <div class="hospital-icon"><i class="fas fa-hospital-user"></i></div>
+    <h1>ผลการปฏิบัติหน้าที่ศูนย์เปล</h1>
+    <p>โรงพยาบาลค่ายจักรพงษ์ | Chakrapong Hospital Stretcher Service</p>
+</header>
+
+<div class="container">
+    <div class="summary-grid">
+        <div class="card">
+            <div class="card-icon icon-blue"><i class="fas fa-clipboard-list"></i></div>
+            <div class="card-info">
+                <h3>ภารกิจสะสมทั้งหมด</h3>
+                <div id="totalJobs" class="value">0</div>
+                <div class="sub-text">รายการที่ลงทะเบียน</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-icon icon-green"><i class="fas fa-award"></i></div>
+            <div class="card-info">
+                <h3>พลเปลปฏิบัติหน้าที่สูงสุด</h3>
+                <div id="topStaff" class="value">-</div>
+                <div id="topStaffCount" class="sub-text">0 ครั้ง</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-icon icon-amber"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="card-info">
+                <h3>แผนกที่ใช้บริการบ่อย</h3>
+                <div id="topDept" class="value">-</div>
+                <div id="topDeptCount" class="sub-text">0 ครั้ง</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-container">
+        <div class="chart-card">
+            <h4><i class="fas fa-chart-pie"></i> สัดส่วนการปฏิบัติงานรายบุคคล</h4>
+            <div class="chart-wrapper"><canvas id="chartStaff"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h4><i class="fas fa-building"></i> การใช้บริการจำแนกตามแผนก</h4>
+            <div class="chart-wrapper"><canvas id="chartDept"></canvas></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="btn-group">
+            <button onclick="filterBy('all')" id="btn-all" class="active">ทั้งหมด</button>
+            <button onclick="filterBy('today')" id="btn-today">ข้อมูลวันนี้</button>
+        </div>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search" placeholder="ค้นหาชื่อพลเปล, แผนก หรือประเภทบริการ...">
+        </div>
+        <button onclick="loadData()" style="background: #e2e8f0; color: #475569;"><i class="fas fa-sync"></i> รีเฟรช</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead id="thead"></thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// ข้อมูลเดิมที่ใช้งานได้ (Google Sheet API)
+const sheetID = "1WkvaZaoiMqYpXcCHkSVDizqke7eHufkdMiiXSjc5tTI";
+const sheetName = "Form Responses 1";
+const url = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
+
+let allData = [];
+let chartInstances = {};
+
+function toggleLoading(show) {
+    document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+}
+
+async function loadData() {
+    toggleLoading(true);
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        allData = data;
+        updateDashboard(allData);
+    } catch (e) {
+        console.error(e);
+        document.getElementById("tbody").innerHTML = `<tr><td colspan="99" style="text-align:center;color:red;padding:20px;">เกิดข้อผิดพลาดในการดึงข้อมูล</td></tr>`;
+    } finally {
+        setTimeout(() => toggleLoading(false), 600);
+    }
+}
+
+function findKey(row, possibleNames) {
+    const keys = Object.keys(row);
+    return keys.find(k => possibleNames.some(p => k.trim().includes(p))) || keys[0];
+}
+
+function updateDashboard(data) {
+    if (data.length === 0) return;
+
+    const firstRow = data[0];
+    const staffKey = findKey(firstRow, ["ชื่อพลเปล", "ชื่อ-นามสกุล", "พลเปล"]);
+    const deptKey = findKey(firstRow, ["แผนก", "เเผนก", "หน่วยงาน"]);
+    
+    renderSummary(data, staffKey, deptKey);
+    renderCharts(data, staffKey, deptKey);
+    renderTable(data, deptKey);
+}
+
+function renderSummary(data, sK, dK) {
+    document.getElementById("totalJobs").innerText = data.length.toLocaleString();
+    const sMap = {}, dMap = {};
+    data.forEach(row => {
+        const s = row[sK] || "ไม่ระบุ";
+        const d = row[dK] || "ไม่ระบุ";
+        sMap[s] = (sMap[s] || 0) + 1;
+        dMap[d] = (dMap[d] || 0) + 1;
+    });
+
+    const topS = Object.keys(sMap).reduce((a, b) => sMap[a] > sMap[b] ? a : b, "-");
+    const topD = Object.keys(dMap).reduce((a, b) => dMap[a] > dMap[b] ? a : b, "-");
+
+    document.getElementById("topStaff").innerText = topS;
+    document.getElementById("topStaffCount").innerText = `${sMap[topS] || 0} ภารกิจ`;
+    document.getElementById("topDept").innerText = topD;
+    document.getElementById("topDeptCount").innerText = `${dMap[topD] || 0} ครั้ง`;
+}
+
+function renderCharts(data, sK, dK) {
+    const maps = { chartStaff: {}, chartDept: {} };
+    data.forEach(row => {
+        maps.chartStaff[row[sK] || "ไม่ระบุ"] = (maps.chartStaff[row[sK] || "ไม่ระบุ"] || 0) + 1;
+        maps.chartDept[row[dK] || "ไม่ระบุ"] = (maps.chartDept[row[dK] || "ไม่ระบุ"] || 0) + 1;
+    });
+    Object.keys(maps).forEach(id => drawChart(id, maps[id]));
+}
+
+function drawChart(id, dataMap) {
+    if (chartInstances[id]) chartInstances[id].destroy();
+    const ctx = document.getElementById(id).getContext('2d');
+    
+    // เรียงข้อมูลจากมากไปน้อย 5 อันดับแรก
+    const sortedLabels = Object.keys(dataMap).sort((a,b) => dataMap[b] - dataMap[a]).slice(0, 8);
+    const sortedData = sortedLabels.map(l => dataMap[l]);
+
+    chartInstances[id] = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: sortedLabels,
+            datasets: [{
+                data: sortedData,
+                backgroundColor: ['#0c4a6e', '#0284c7', '#0ea5e9', '#38bdf8', '#7dd3fc', '#bae6fd', '#e0f2fe', '#f0f9ff'],
+                borderWidth: 2,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { boxWidth: 12, font: { family: 'Sarabun', size: 11 } } }
+            },
+            cutout: '65%'
+        }
+    });
+}
+
+function renderTable(data, dK) {
+    const thead = document.getElementById("thead");
+    const tbody = document.getElementById("tbody");
+    if (!data.length) return;
+
+    // เลือกเฉพาะ Header ที่ไม่ใช่ Timestamp หรือ ประทับเวลา
+    const headers = Object.keys(data[0]).filter(h => 
+        !h.toLowerCase().includes("timestamp") && 
+        !h.includes("ประทับเวลา")
+    );
+
+    // แสดง Header
+    thead.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join('') + "</tr>";
+    
+    // แสดงข้อมูลในแต่ละแถว เฉพาะคอลัมน์ที่เหลืออยู่
+    tbody.innerHTML = data.slice(0, 50).map(row => "<tr>" + headers.map(h => {
+        let val = row[h] || "-";
+        return h === dK ? `<td><span class="badge-dept">${val}</span></td>` : `<td>${val}</td>`;
+    }).join('') + "</tr>").join('');
+}
+
+function filterBy(range) {
+    document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-${range}`).classList.add('active');
+
+    if (range === 'all') {
+        updateDashboard(allData);
+        return;
+    }
+
+    const today = new Date();
+    const todayStr = today.toLocaleDateString('en-GB'); // "DD/MM/YYYY"
+
+    const filtered = allData.filter(row => {
+        const dateKey = Object.keys(row).find(k => k.includes("วัน"));
+        return dateKey && String(row[dateKey]).includes(todayStr);
+    });
+
+    updateDashboard(filtered);
+}
+
+document.getElementById("search").addEventListener("input", function() {
+    const k = this.value.toLowerCase();
+    const filtered = allData.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(k)));
+    updateDashboard(filtered);
+});
+
+loadData();
+</script>
+<footer>
+    <div class="footer-content">
+        <div class="footer-about">
+            <h4><i class="fas fa-info-circle"></i> เกี่ยวกับระบบ</h4>
+            <p>
+                ระบบนี้ถูกพัฒนาขึ้นเพื่อใช้ในการบันทึก ติดตาม และวิเคราะห์ข้อมูลการปฏิบัติงานของเจ้าหน้าที่พลเปล 
+                ภายในโรงพยาบาลค่ายจักรพงษ์ โดยมีวัตถุประสงค์เพื่อเพิ่มประสิทธิภาพในการบริหารจัดการงานเคลื่อนย้ายผู้ป่วย 
+                และสนับสนุนการตัดสินใจของผู้บริหารด้วยข้อมูลที่ถูกต้องแม่นยำและเป็นปัจจุบัน
+            </p>
+        </div>
+
+        <div class="footer-info">
+            <h4><i class="fas fa-hospital"></i> หน่วยงาน</h4>
+            <ul>
+                <li>ศูนย์เปล โรงพยาบาลค่ายจักรพงษ์</li>
+                <li>มณฑลทหารบกที่ 12</li>
+                <li><i class="fas fa-phone-alt"></i> ติดต่อสอบถามภายใน โทร. 037-211-591 </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        Chakrapong Hospital. All Rights Reserved.
+    </div>
+</footer>
+
+</body>
+</html>
