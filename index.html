@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stretcher Service Dashboard - รพ.ค่ายจักรพงษ์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-main: #f8fafc;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-main);
+            margin: 0; padding: 0;
+            color: #334155;
+        }
+
+        /* --- Header Section --- */
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px 20px 80px;
+            text-align: center;
+            clip-path: ellipse(150% 100% at 50% 0%);
+        }
+
+        .header-content h1 { margin: 10px 0; font-size: 2.2rem; font-weight: 700; letter-spacing: 1px; }
+        .header-content p { opacity: 0.9; font-weight: 300; }
+
+        .container { max-width: 1300px; margin: -50px auto 40px; padding: 0 20px; }
+
+        /* --- Filter Section --- */
+        .filter-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-group label { font-size: 0.85rem; font-weight: 600; color: #64748b; }
+        
+        select, input {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Sarabun';
+            outline: none;
+            transition: 0.3s;
+        }
+
+        select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+        /* --- Summary Cards --- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+        
+        .stat-icon {
+            width: 55px; height: 55px;
+            border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; margin-right: 15px;
+        }
+
+        .blue-icon { background: #eff6ff; color: #3b82f6; }
+        .green-icon { background: #ecfdf5; color: #10b981; }
+        .orange-icon { background: #fff7ed; color: #f59e0b; }
+
+        .stat-info h3 { margin: 0; font-size: 0.85rem; color: #64748b; }
+        .stat-info .value { font-size: 1.4rem; font-weight: 700; color: #1e293b; }
+
+        /* --- Charts --- */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 24px;
+            box-shadow: var(--card-shadow);
+            height: 350px;
+        }
+
+        /* --- Table --- */
+        .table-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+        .table-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: #f8fafc; padding: 15px 20px; text-align: left; font-size: 0.9rem; color: #64748b; }
+        td { padding: 15px 20px; border-bottom: 1px solid #f8fafc; font-size: 0.95rem; }
+        tr:hover { background: #f1f5f9; }
+
+        .badge-shift {
+            padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+        }
+        .shift-morning { background: #dcfce7; color: #166534; }
+        .shift-afternoon { background: #fef9c3; color: #854d0e; }
+        .shift-night { background: #f1f5f9; color: #475569; }
+
+        /* --- Loading --- */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 10000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loader">
+    <div class="spinner-border" style="width: 3rem; height: 3rem; border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <p style="margin-top: 15px; font-weight: 600;">กำลังดึงข้อมูลเรียลไทม์...</p>
+</div>
+
+<header>
+    <div class="header-content">
+        <i class="fas fa-ambulance fa-3x"></i>
+        <h1>Dashboard ผลการปฏิบัติงานศูนย์เปล</h1>
+        <p>โรงพยาบาลค่ายจักรพงษ์ มณฑลทหารบกที่ 12</p>
+    </div>
+</header>
+
+<div class="container">
+    <div class="filter-panel">
+        <div class="filter-group">
+            <label><i class="fas fa-calendar-day"></i> ช่วงเวลา</label>
+            <select id="dateRange" onchange="runFilter()">
+                <option value="all">ทั้งหมด</option>
+                <option value="today">วันนี้</option>
+                <option value="thisMonth">เดือนนี้</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label><i class="fas fa-clock"></i> เลือกกะการทำงาน (Shift)</label>
+            <select id="shiftFilter" onchange="runFilter()">
+                <option value="all">ทุกช่วงเวลา (All Shifts)</option>
+                <option value="morning">กะเช้า (08:00 - 16:00)</option>
+                <option value="afternoon">กะบ่าย (16:00 - 00:00)</option>
+                <option value="night">กะดึก (00:00 - 08:00)</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label><i class="fas fa-search"></i> ค้นหาชื่อ/หน่วยงาน</label>
+            <input type="text" id="searchInput" placeholder="พิมพ์เพื่อค้นหา..." oninput="runFilter()">
+        </div>
+        <button onclick="loadData()" style="background: var(--accent); color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 600;">
+            <i class="fas fa-sync-alt"></i> อัปเดตข้อมูล
+        </button>
+    </div>
+
+    <div class="summary-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue-icon"><i class="fas fa-tasks"></i></div>
+            <div class="stat-info">
+                <h3>ภารกิจที่เลือก</h3>
+                <div id="totalJobs" class="value">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green-icon"><i class="fas fa-user-check"></i></div>
+            <div class="stat-info">
+                <h3>พลเปลดีเด่น</h3>
+                <div id="topStaff" class="value">-</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange-icon"><i class="fas fa-hospital-alt"></i></div>
+            <div class="stat-info">
+                <h3>หน่วยงานยอดนิยม</h3>
+                <div id="topDept" class="value">-</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-row">
+        <div class="chart-container">
+            <h4 style="margin: 0 0 15px 0;">สัดส่วนการปฏิบัติงานรายบุคคล</h4>
+            <canvas id="staffChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h4 style="margin: 0 0 15px 0;">การใช้บริการแยกตามแผนก</h4>
+            <canvas id="deptChart"></canvas>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div class="table-header">
+            <h3 style="margin:0;"><i class="fas fa-list"></i> รายละเอียดภารกิจล่าสุด</h3>
+            <span id="dataCount" style="font-size: 0.8rem; color: #64748b;">แสดง 0 รายการ</span>
+        </div>
+        <div class="table-wrapper">
+            <table id="stretcherTable">
+                <thead>
+                    <tr id="tableHead"></tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+
+const sheetID = "1WkvaZaoiMqYpXcCHkSVDizqke7eHufkdMiiXSjc5tTI";
+const sheetName = "Form Responses 1";
+const endpoint = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
+
+let rawData = [];
+let charts = {};
+
+async function loadData() {
+    document.getElementById('loader').style.display = 'flex';
+    try {
+        const response = await fetch(endpoint);
+        rawData = await response.json();
+        runFilter();
+    } catch (err) {
+        alert("โหลดข้อมูลล้มเหลว กรุณาตรวจสอบการตั้งค่า Sheet");
+    } finally {
+        document.getElementById('loader').style.display = 'none';
+    }
+}
+
+function getShift(timeStr) {
+    if (!timeStr) return "N/A";
+    const hour = parseInt(timeStr.split(':')[0]);
+    if (hour >= 8 && hour < 16) return "morning";
+    if (hour >= 16 && hour <= 23) return "afternoon";
+    return "night";
+}
+
+function runFilter() {
+    const range = document.getElementById('dateRange').value;
+    const shift = document.getElementById('shiftFilter').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('en-GB');
+    const thisMonth = now.getMonth() + 1;
+    const thisYear = now.getFullYear();
+
+    // หาคีย์คอลัมน์
+    const firstRow = rawData[0] || {};
+    const dateKey = Object.keys(firstRow).find(k => k.includes("วัน"));
+    const timeKey = Object.keys(firstRow).find(k => k.includes("เวลา"));
+    const staffKey = Object.keys(firstRow).find(k => k.includes("ชื่อ")) || "";
+    const deptKey = Object.keys(firstRow).find(k => k.includes("แผนก")) || "";
+
+    let filtered = rawData.filter(row => {
+        // 1. กรองวันที่
+        let matchDate = true;
+        if (range === 'today') matchDate = String(row[dateKey]).includes(todayStr);
+        if (range === 'thisMonth') {
+            const parts = String(row[dateKey]).split(/[\/\-]/);
+            matchDate = parseInt(parts[1]) === thisMonth;
+        }
+
+        // 2. กรองกะ (Shift)
+        let matchShift = true;
+        if (shift !== 'all') matchShift = getShift(row[timeKey]) === shift;
+
+        // 3. กรองคำค้นหา
+        let matchSearch = Object.values(row).some(v => String(v).toLowerCase().includes(search));
+
+        return matchDate && matchShift && matchSearch;
+    });
+
+    updateUI(filtered, staffKey, deptKey, timeKey);
+}
+
+function updateUI(data, sK, dK, tK) {
+    // อัปเดตตัวเลข
+    document.getElementById('totalJobs').innerText = data.length;
+    document.getElementById('dataCount').innerText = `พบทั้งหมด ${data.length} รายการ`;
+
+    // ค้นหา Top Staff/Dept
+    const sMap = {}, dMap = {};
+    data.forEach(r => {
+        if(r[sK]) sMap[r[sK]] = (sMap[r[sK]] || 0) + 1;
+        if(r[dK]) dMap[r[dK]] = (dMap[r[dK]] || 0) + 1;
+    });
+
+    document.getElementById('topStaff').innerText = Object.keys(sMap).reduce((a, b) => sMap[a] > sMap[b] ? a : b, "-");
+    document.getElementById('topDept').innerText = Object.keys(sMap).length > 0 ? Object.keys(dMap).reduce((a, b) => dMap[a] > dMap[b] ? a : b, "-") : "-";
+
+    renderCharts(sMap, dMap);
+    renderTable(data, tK);
+}
+
+function renderCharts(sMap, dMap) {
+    const config = (map, id, color) => {
+        if (charts[id]) charts[id].destroy();
+        const labels = Object.keys(map).sort((a,b) => map[b] - map[a]).slice(0, 5);
+        charts[id] = new Chart(document.getElementById(id), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ data: labels.map(l => map[l]), backgroundColor: color, borderRadius: 8 }]
+            },
+            options: { 
+                indexAxis: 'y', 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+    };
+    config(sMap, 'staffChart', '#3b82f6');
+    config(dMap, 'deptChart', '#10b981');
+}
+
+function renderTable(data, tK) {
+    const head = document.getElementById('tableHead');
+    const body = document.getElementById('tableBody');
+    
+    if (data.length === 0) {
+        body.innerHTML = "<tr><td colspan='10' style='text-align:center;'>ไม่พบข้อมูล</td></tr>";
+        return;
+    }
+
+    const headers = Object.keys(data[0]).filter(h => !h.includes("Timestamp"));
+    head.innerHTML = `<th>ลำดับ</th>` + headers.map(h => `<th>${h}</th>`).join('') + `<th>ช่วงเวลา</th>`;
+
+    body.innerHTML = data.slice(0, 50).map((row, i) => {
+        const shift = getShift(row[tK]);
+        let shiftBadge = `<span class="badge-shift shift-morning">เช้า</span>`;
+        if(shift === 'afternoon') shiftBadge = `<span class="badge-shift shift-afternoon">บ่าย</span>`;
+        if(shift === 'night') shiftBadge = `<span class="badge-shift shift-night">ดึก</span>`;
+
+        return `<tr>
+            <td>${i+1}</td>
+            ${headers.map(h => `<td>${row[h] || '-'}</td>`).join('')}
+            <td>${shiftBadge}</td>
+        </tr>`;
+    }).join('');
+}
+
+loadData();
+</script>
+
+</body>
+</html>
