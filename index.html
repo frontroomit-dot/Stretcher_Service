@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stretcher Service Dashboard - รพ.ค่ายจักรพงษ์</title>
+    <title>Stretcher Service Dashboard | รพ.ค่ายจักรพงษ์</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
         :root {
             --primary: #0f172a;
@@ -33,6 +32,39 @@
             text-align: center;
             clip-path: ellipse(150% 100% at 50% 0%);
         }
+        /* เพิ่มสไตล์สำหรับ Logo */
+    .logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+
+    .custom-logo {
+        width: 60px;
+        height: 60px;
+        background: white;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .custom-logo i.fa-plus {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 14px;
+        color: var(--danger);
+    }
+
+    .custom-logo i.fa-bed-pulse {
+        font-size: 28px;
+        color: var(--accent);
+    }
 
         .header-content h1 { margin: 10px 0; font-size: 2.2rem; font-weight: 700; letter-spacing: 1px; }
         .header-content p { opacity: 0.9; font-weight: 300; }
@@ -166,6 +198,72 @@
             justify-content: center; align-items: center;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* --- Footer Style --- */
+        footer {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 40px 0 20px;
+            margin-top: 50px;
+            border-top: 4px solid var(--accent);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        .footer-section h4 {
+            color: var(--accent);
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-section p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .contact-item i {
+            color: var(--accent);
+            width: 20px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .tel-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .tel-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -177,9 +275,16 @@
 
 <header>
     <div class="header-content">
-        <i class="fas fa-ambulance fa-3x"></i>
-        <h1>Dashboard ผลการปฏิบัติงานศูนย์เปล</h1>
-        <p>โรงพยาบาลค่ายจักรพงษ์ มณฑลทหารบกที่ 12</p>
+        <div class="logo-container">
+            <div class="custom-logo">
+                <i class="fas fa-plus"></i>
+                <i class="fas fa-bed-pulse"></i>
+            </div>
+        </div>
+        <h1>Stretcher Service Dashboard</h1>
+        <p style="font-size: 1.1rem; letter-spacing: 0.5px;">
+            ศูนย์เปล โรงพยาบาลค่ายจักรพงษ์ มณฑลทหารบกที่ 12
+        </p>
     </div>
 </header>
 
@@ -403,6 +508,34 @@ function renderPagination(tK) {
 
 loadData();
 </script>
+<footer>
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4><i class="fas fa-hospital-symbol"></i> เกี่ยวกับหน่วยงาน</h4>
+            <p>ศูนย์เปล โรงพยาบาลค่ายจักรพงษ์ มุ่งมั่นให้บริการเคลื่อนย้ายผู้ป่วยอย่างรวดเร็ว ปลอดภัย และมีประสิทธิภาพ มาตรฐาน</p>
+        </div>
 
+        <div class="footer-section">
+            <h4><i class="fas fa-headset"></i> ติดต่อสอบถาม</h4>
+            <div class="contact-item">
+                <i class="fas fa-phone-alt"></i>
+                <span>เบอร์โทรศัพท์: <a href="tel:037211591" class="tel-link">037-211-591</a></span>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>ต.หน้าเมือง อ.เมือง จ.ปราจีนบุรี 25000</span>
+            </div>
+        </div>
+
+        <div class="footer-section">
+            <h4><i class="fas fa-info-circle"></i> ข้อมูลระบบ</h4>
+            <p>ระบบรายงานผลแบบ Real-time เชื่อมต่อข้อมูลจาก Google Sheets เพื่อความโปร่งใสและตรวจสอบได้ในการปฏิบัติงาน</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>&copy;   2026 รพ.ค่ายจักรพงษ์ | Stretcher Service Dashboard</p>
+    </div>
+</footer>
 </body>
 </html>
