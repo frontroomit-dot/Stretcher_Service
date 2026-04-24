@@ -3,226 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stretcher Service Dashboard | รพ.ค่ายจักรพงษ์</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Stretcher Service Intelligence | รพ.ค่ายจักรพงษ์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #0f172a;
             --accent: #3b82f6;
+            --accent-light: #60a5fa;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --bg-main: #f8fafc;
-            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --bg-main: #f1f5f9;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --glass: rgba(255, 255, 255, 0.9);
         }
 
         body {
-            font-family: 'Sarabun', sans-serif;
+            font-family: 'Sarabun', 'Inter', sans-serif;
             background-color: var(--bg-main);
             margin: 0; padding: 0;
-            color: #334155;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            color: #1e293b;
+            display: flex; flex-direction: column; min-height: 100vh;
+            overflow-x: hidden; /* ป้องกันหน้าจอเลื่อนซ้ายขวาในภาพรวม */
         }
 
+        /* --- Header & Navigation --- */
         header {
-            background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+            background: radial-gradient(circle at top left, #1e293b, #0f172a);
             color: white;
-            padding: 40px 20px 80px;
+            padding: 50px 20px 120px;
             text-align: center;
-            clip-path: ellipse(150% 100% at 50% 0%);
+            position: relative;
         }
-        
-        .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
+
+        .logo-container { margin-bottom: 15px; }
 
         .custom-logo {
-            width: 60px; height: 60px;
-            background: white;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 70px; height: 70px;
+            background: white; border-radius: 20px;
+            display: inline-flex; align-items: center; justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .custom-logo i.fa-plus {
-            position: absolute;
-            top: 12px; right: 12px;
-            font-size: 14px;
-            color: var(--danger);
+        .custom-logo i.fa-plus { position: absolute; top: 15px; right: 15px; font-size: 16px; color: var(--danger); }
+        .custom-logo i.fa-bed-pulse { font-size: 32px; color: var(--accent); }
+
+        .header-content h1 { 
+            margin: 10px 0; font-size: 2.5rem; font-weight: 700; 
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .custom-logo i.fa-bed-pulse {
-            font-size: 28px;
-            color: var(--accent);
+        /* --- Dashboard Layout --- */
+        .container { 
+            max-width: 1400px; margin: -60px auto 40px; padding: 0 20px; 
+            flex: 1; width: 100%; box-sizing: border-box; 
         }
 
-        .header-content h1 { margin: 10px 0; font-size: 2.2rem; font-weight: 700; letter-spacing: 1px; }
-        .header-content p { opacity: 0.9; font-weight: 300; }
-
-        .container { max-width: 1300px; margin: -50px auto 40px; padding: 0 20px; flex: 1; width: 100%; box-sizing: border-box; }
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease;
+        }
 
         .filter-panel {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 25px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            align-items: end;
+            padding: 30px; margin-bottom: 30px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; align-items: end;
         }
 
-        .filter-group { display: flex; flex-direction: column; gap: 8px; }
-        .filter-group label { font-size: 0.85rem; font-weight: 600; color: #64748b; }
+        .filter-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 8px; }
         
         select, input {
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            font-family: 'Sarabun';
-            outline: none;
-            transition: 0.3s;
+            width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 14px;
+            font-family: 'Sarabun'; outline: none; transition: 0.3s; background: #fff; box-sizing: border-box;
         }
+        select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
 
+        /* --- Stats Grid --- */
         .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px; margin-bottom: 30px;
         }
 
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            display: flex;
-            align-items: center;
+        .stat-card { padding: 25px; display: flex; align-items: center; }
+        .stat-card:hover { transform: translateY(-5px); }
+
+        .stat-icon {
+            width: 60px; height: 60px; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-right: 20px; flex-shrink: 0;
         }
 
+        /* --- Charts --- */
         .charts-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px; margin-bottom: 30px;
         }
 
-        .chart-container {
-            background: white;
-            padding: 25px;
-            border-radius: 24px;
-            box-shadow: var(--card-shadow);
-            height: 380px;
+        .chart-box { padding: 30px; min-height: 400px; box-sizing: border-box; }
+        .chart-full { grid-column: 1 / -1; width: 100%; }
+
+        /* --- Table Styling --- */
+        .table-card { overflow: hidden; margin-bottom: 40px; }
+        .table-header { padding: 25px 30px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        
+        /* แก้ไขส่วนความสัมพันธ์ที่ล้นหน้าจอ */
+        .rel-table-wrapper { 
+            overflow-x: auto; 
+            border-radius: 16px; 
+            border: 1px solid #e2e8f0; 
+            max-width: 100%;
+            position: relative;
+        }
+        .rel-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9rem; }
+        .rel-table th { background: #f8fafc; padding: 15px; color: #475569; font-weight: 700; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; text-align: center; white-space: nowrap; }
+        .rel-table td { padding: 12px; text-align: center; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; background: #fff; white-space: nowrap; }
+        
+        /* ตรึงคอลัมน์แรกให้คงที่เวลาเลื่อนซ้ายขวา */
+        .rel-table td:first-child, .rel-table th:first-child { 
+            text-align: left; font-weight: 600; background: #f8fafc; 
+            position: sticky; left: 0; z-index: 10; border-right: 2px solid #e2e8f0;
         }
 
-        .chart-full { grid-column: 1 / -1; height: auto; min-height: 450px; }
-
-        .rel-table-wrapper { overflow-x: auto; margin-top: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .rel-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 800px; }
-        .rel-table th { background: #f1f5f9; color: #475569; padding: 12px; border: 1px solid #e2e8f0; position: sticky; top: 0; }
-        .rel-table td { padding: 10px; text-align: center; border: 1px solid #e2e8f0; }
-        .rel-table td:first-child { text-align: left; font-weight: 600; background: #f8fafc; position: sticky; left: 0; z-index: 5; }
-        .count-cell { font-weight: bold; color: var(--accent); background: #f0f7ff; }
+        .count-cell { font-weight: bold; color: var(--accent); background: #eff6ff !important; }
         .count-zero { color: #cbd5e1; }
-        .total-col { background: #eff6ff !important; font-weight: bold; color: var(--primary); }
 
-        .table-card { background: white; border-radius: 24px; box-shadow: var(--card-shadow); overflow: hidden; margin-bottom: 20px; }
-        .table-header { padding: 20px 25px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: #f8fafc; padding: 15px 20px; text-align: left; font-size: 0.9rem; color: #64748b; }
-        td { padding: 15px 20px; border-bottom: 1px solid #f8fafc; font-size: 0.95rem; }
-        .badge-shift { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .shift-morning { background: #dcfce7; color: #166534; }
-        .shift-afternoon { background: #fef9c3; color: #854d0e; }
+        .badge-shift { padding: 6px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .shift-morning { background: #dcfce7; color: #15803d; }
+        .shift-afternoon { background: #fef9c3; color: #a16207; }
         .shift-night { background: #f1f5f9; color: #475569; }
 
-        /* --- Footer Styling --- */
-        footer {
-            background: #0f172a;
-            color: #94a3b8;
-            padding: 60px 20px 30px;
-            margin-top: auto;
-            position: relative;
-        }
+        /* --- Footer --- */
+        footer { background: #0f172a; color: #94a3b8; padding: 60px 20px 30px; margin-top: auto; border-top: 4px solid var(--accent); }
+        .footer-content { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; }
+        .footer-section h4 { color: white; margin-bottom: 25px; font-size: 1.2rem; }
+        .dev-tag { background: linear-gradient(90deg, #3b82f6, #2dd4bf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
 
-        footer::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
-            background: linear-gradient(90deg, var(--accent), var(--success));
-        }
-
-        .footer-content {
-            max-width: 1300px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 40px;
-            padding-bottom: 40px;
-        }
-
-        .footer-section h4 { color: white; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; }
-        
-        .status-badge {
-            display: inline-flex; align-items: center; gap: 10px;
-            background: rgba(30, 41, 59, 0.7);
-            padding: 8px 16px; border-radius: 50px;
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-top: 15px;
-        }
-
-        .status-dot {
-            width: 10px; height: 10px; background: #10b981; border-radius: 50%;
-            position: relative;
-        }
-
-        .status-dot::after {
-            content: ""; position: absolute; width: 100%; height: 100%; background: inherit;
-            border-radius: 50%; animation: pulse-green 2s infinite;
-        }
-
-        @keyframes pulse-green {
-            0% { transform: scale(1); opacity: 0.8; }
-            70% { transform: scale(2.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 0; }
-        }
-
-        .footer-links { list-style: none; padding: 0; margin: 0; }
-        .footer-links li { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
-        .footer-links li i { color: var(--accent); width: 20px; }
-
-        .copyright-bar {
-            max-width: 1300px; margin: 0 auto; padding-top: 25px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            text-align: center; font-size: 0.85rem;
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
-        }
-
-        .dev-tag {
-            background: linear-gradient(90deg, #3b82f6, #2dd4bf);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;
-        }
-
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #loader { position: fixed; inset: 0; background: #fff; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* การจัดการ Pagination ให้เหมาะสมกับมือถือ */
+        #pagination { display: flex; justify-content: center; padding: 20px; gap: 5px; flex-wrap: wrap; }
+        #pagination button { min-width: 40px; margin-bottom: 5px; }
+
+        @media (max-width: 768px) {
+            .header-content h1 { font-size: 1.8rem; }
+            .charts-row { grid-template-columns: 1fr; }
+            .container { padding: 0 15px; margin-top: -80px; }
+            header { padding-bottom: 140px; }
+        }
     </style>
 </head>
 <body>
 
 <div id="loader">
-    <div style="width: 3rem; height: 3rem; border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-    <p style="margin-top: 15px; font-weight: 600;">กำลังประมวลผลข้อมูลหน่วยงาน...</p>
+    <div class="spinner"></div>
+    <p style="margin-top: 20px; font-weight: 600; color: #64748b;">กำลังเชื่อมต่อฐานข้อมูลศูนย์เปล...</p>
 </div>
 
 <header>
@@ -230,115 +174,114 @@
         <div class="logo-container">
             <div class="custom-logo"><i class="fas fa-plus"></i><i class="fas fa-bed-pulse"></i></div>
         </div>
-        <h1>Stretcher Service Dashboard</h1>
-        <p>ศูนย์เปล โรงพยาบาลค่ายจักรพงษ์</p>
+        <h1>Stretcher Intelligence</h1>
+        <p style="font-size: 1.1rem; opacity: 0.8;">ระบบวิเคราะห์ข้อมูลศูนย์เปล โรงพยาบาลค่ายจักรพงษ์</p>
     </div>
 </header>
 
 <div class="container">
-    <div class="filter-panel">
+    <div class="glass-card filter-panel">
         <div class="filter-group">
-            <label><i class="fas fa-calendar-day"></i> ช่วงเวลา</label>
+            <label><i class="fas fa-calendar-alt"></i> ช่วงเวลาข้อมูล</label>
             <select id="dateRange" onchange="runFilter()">
-                <option value="all">ทั้งหมด</option>
-                <option value="today" selected>วันนี้</option>
-                <option value="thisMonth">เดือนนี้</option>
+                <option value="all">ข้อมูลทั้งหมด</option>
+                <option value="today" selected>ภารกิจวันนี้</option>
+                <option value="thisMonth">ภาพรวมเดือนนี้</option>
             </select>
         </div>
         <div class="filter-group">
-            <label><i class="fas fa-clock"></i> เลือกกะ (Shift)</label>
+            <label><i class="fas fa-clock"></i> แยกตามผลัดกะ</label>
             <select id="shiftFilter" onchange="runFilter()">
-                <option value="all">ทุกช่วงเวลา</option>
-                <option value="morning">กะเช้า</option>
-                <option value="afternoon">กะบ่าย</option>
-                <option value="night">กะดึก</option>
+                <option value="all">ทุกกะการทำงาน</option>
+                <option value="morning">กะเช้า (08:00 - 16:00)</option>
+                <option value="afternoon">กะบ่าย (16:00 - 24:00)</option>
+                <option value="night">กะดึก (00:00 - 08:00)</option>
             </select>
         </div>
         <div class="filter-group">
-            <label><i class="fas fa-search"></i> ค้นหา</label>
-            <input type="text" id="searchInput" placeholder="ชื่อ/หน่วยงาน..." oninput="runFilter()">
+            <label><i class="fas fa-search"></i> ค้นหาอัจฉริยะ</label>
+            <input type="text" id="searchInput" placeholder="ชื่อพลเปล หรือ ชื่อแผนก..." oninput="runFilter()">
         </div>
-        <button onclick="loadData()" style="background: var(--accent); color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 600;">
-            <i class="fas fa-sync-alt"></i> รีเฟรชข้อมูล
+        <button onclick="loadData()" style="background: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; cursor: pointer; font-weight: 700; transition: 0.3s; height: 50px;">
+            <i class="fas fa-sync-alt"></i> อัปเดตข้อมูล
         </button>
     </div>
 
     <div class="summary-grid">
-        <div class="stat-card">
-            <div style="background: #eff6ff; color: #3b82f6; width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-right: 15px;"><i class="fas fa-tasks"></i></div>
-            <div class="stat-info"><h3>ภารกิจรวม</h3><div id="totalJobs" style="font-size: 1.8rem; font-weight: 700;">0</div></div>
+        <div class="glass-card stat-card">
+            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--accent);"><i class="fas fa-ambulance"></i></div>
+            <div class="stat-info">
+                <p style="color: #64748b; margin: 0; font-size: 0.9rem; font-weight: 600;">ภารกิจที่ทำสำเร็จ</p>
+                <div id="totalJobs" style="font-size: 2rem; font-weight: 800; color: var(--primary);">0</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div style="background: #ecfdf5; color: #10b981; width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-right: 15px;"><i class="fas fa-medal"></i></div>
-            <div class="stat-info"><h3>รับงานสูงสุด</h3><div id="topStaff" style="font-size: 1.1rem; font-weight: 700;">-</div></div>
+        <div class="glass-card stat-card">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fas fa-user-check"></i></div>
+            <div class="stat-info">
+                <p style="color: #64748b; margin: 0; font-size: 0.9rem; font-weight: 600;">พลเปลงานสูงสุด</p>
+                <div id="topStaff" style="font-size: 1.1rem; font-weight: 700; color: var(--primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">-</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div style="background: #fef2f2; color: #ef4444; width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-right: 15px;"><i class="fas fa-user-clock"></i></div>
-            <div class="stat-info"><h3>รับงานน้อยสุด</h3><div id="bottomStaff" style="font-size: 1.1rem; font-weight: 700;">-</div></div>
+        <div class="glass-card stat-card">
+            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="stat-info">
+                <p style="color: #64748b; margin: 0; font-size: 0.9rem; font-weight: 600;">แผนกเรียกใช้บ่อย</p>
+                <div id="topDept" style="font-size: 1.1rem; font-weight: 700; color: var(--primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">-</div>
+            </div>
         </div>
     </div>
 
     <div class="charts-row">
-        <div class="chart-container">
-            <h4 style="margin: 0 0 15px 0;"><i class="fas fa-chart-line"></i> 5 อันดับพลเปลงานเยอะ</h4>
-            <canvas id="staffChart"></canvas>
+        <div class="glass-card chart-box">
+            <h4 style="margin: 0 0 20px 0;"><i class="fas fa-chart-bar" style="color: var(--accent);"></i> ลำดับภารกิจแยกตามพลเปล</h4>
+            <div style="height: 300px;"><canvas id="staffChart"></canvas></div>
         </div>
-        <div class="chart-container">
-            <h4 style="margin: 0 0 15px 0;"><i class="fas fa-building"></i> 5 อันดับแผนกที่ใช้บริการ</h4>
-            <canvas id="deptChart"></canvas>
+        <div class="glass-card chart-box">
+            <h4 style="margin: 0 0 20px 0;"><i class="fas fa-chart-pie" style="color: var(--success);"></i> สัดส่วนการใช้บริการแต่ละแผนก</h4>
+            <div style="height: 300px;"><canvas id="deptChart"></canvas></div>
         </div>
-        
-        <div class="chart-container chart-full">
-            <h4 style="margin: 0 0 5px 0;"><i class="fas fa-th"></i> ตารางความสัมพันธ์: พลเปล x แผนก</h4>
-            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">แสดงจำนวนครั้งที่พลทหารแต่ละนายไปแต่ละแผนก</p>
+        <div class="glass-card chart-box chart-full">
+            <h4 style="margin: 0 0 10px 0;"><i class="fas fa-table" style="color: var(--accent);"></i> ตารางวิเคราะห์ความสัมพันธ์ (พลเปล x แผนก)</h4>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">* เลื่อนตารางไปทางขวาเพื่อดูแผนกทั้งหมด</p>
             <div class="rel-table-wrapper" id="relationTableContainer"></div>
         </div>
     </div>
 
-    <div class="table-card">
+    <div class="glass-card table-card">
         <div class="table-header">
-            <h3 style="margin:0;"><i class="fas fa-list"></i> รายละเอียดภารกิจ</h3>
-            <span id="dataCount" style="font-size: 0.8rem; color: #64748b;">-</span>
+            <h3 style="margin:0;"><i class="fas fa-history"></i> บันทึกภารกิจล่าสุด</h3>
+            <div id="dataCount" style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">0 รายการ</div>
         </div>
-        <div class="table-wrapper">
-            <table id="stretcherTable">
-                <thead><tr id="tableHead"></tr></thead>
+        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                <thead style="background: #f8fafc;">
+                    <tr id="tableHead"></tr>
+                </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
-        <div id="pagination" class="pagination-container" style="display:flex; justify-content:center; padding:20px; gap:5px;"></div>
+        <div id="pagination"></div>
     </div>
 </div>
 
 <footer>
     <div class="footer-content">
         <div class="footer-section">
-            <h4><i class="fas fa-hospital-symbol"></i> ศูนย์เปลจักรพงษ์</h4>
-            <p>หน่วยงานพลเปลและลำเลียงผู้ป่วย<br>โรงพยาบาลค่ายจักรพงษ์ จ.ปราจีนบุรี<br>ปฏิบัติภารกิจดูแลพี่น้องทหารและประชาชน</p>
-            <div class="status-badge">
-                <div class="status-dot"></div>
-                <span style="color: #10b981; font-weight: 600;">System Online</span>
-                <span style="color: #64748b; margin-left: 5px;">| Real-time</span>
+            <h4><i class="fas fa-hospital-user"></i> เกี่ยวกับระบบ</h4>
+            <p>ระบบนี้ออกแบบมาเพื่อยกระดับการบริหารจัดการพลเปลให้รวดเร็วและตรวจสอบได้ ภายใต้มาตรฐานกองทัพบก</p>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%;"></div>
+                <span style="font-size: 0.8rem; color: #10b981; font-weight: 700;">LIVE CONNECTION ACTIVE</span>
             </div>
         </div>
         <div class="footer-section">
-            <h4><i class="fas fa-info-circle"></i> ช่องทางประสานงาน</h4>
-            <ul class="footer-links">
-                <li><i class="fas fa-phone-alt"></i> เบอร์ภายใน: 037-211-591 ต่อ ( 0 )</li>
-                <li><i class="fas fa-user-shield"></i> ผู้ดูแลระบบ: สำนักงานผู้อำนวยการ</li>
-            </ul>
+            <h4><i class="fas fa-link"></i> ลิงก์ที่เกี่ยวข้อง</h4>
+            <p>• แจ้งซ่อมอุปกรณ์สื่อสาร<br>• ระบบลางานออนไลน์<br>• ระเบียบปฏิบัติประจำวัน (SOP)</p>
         </div>
         <div class="footer-section">
-            <h4><i class="fas fa-shield-alt"></i> มาตรฐานบริการ</h4>
-            <p>รวดเร็ว ปลอดภัย ใส่ใจบริการ<br>รองรับการทำงาน 24 ชั่วโมง<br>ระบบอัปเดตอัตโนมัติจาก Google Forms</p>
+            <h4><i class="fas fa-code"></i> การพัฒนา</h4>
+            <p>Developed with ❤️ by <span class="dev-tag">Director's Office</span><br>Fort Chakrapong Hospital © 2026</p>
         </div>
-    </div>
-    <div class="copyright-bar">
-        <span>&copy; 2026 Stretcher Management System</span>
-        <span style="color: #475569;">•</span>
-        <span>Developed by <span class="dev-tag">Director's Office</span></span>
-        <span style="color: #475569;">•</span>
-        <span>Fort Chakrapong Hospital</span>
     </div>
 </footer>
 
@@ -348,7 +291,7 @@ const sheetName = "Form Responses 1";
 const endpoint = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
 
 let rawData = [], filteredData = [], charts = {}, currentPage = 1;
-const rowsPerPage = 25;
+const rowsPerPage = 20;
 
 async function loadData() {
     document.getElementById('loader').style.display = 'flex';
@@ -356,8 +299,12 @@ async function loadData() {
         const response = await fetch(endpoint);
         rawData = await response.json();
         runFilter();
-    } catch (err) { alert("โหลดข้อมูลล้มเหลว"); }
-    finally { document.getElementById('loader').style.display = 'none'; }
+    } catch (err) { 
+        console.error(err);
+        alert("ขออภัย! ไม่สามารถเชื่อมต่อข้อมูลได้"); 
+    } finally { 
+        setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+    }
 }
 
 function getShift(timeStr) {
@@ -372,84 +319,167 @@ function runFilter() {
     const range = document.getElementById('dateRange').value;
     const shift = document.getElementById('shiftFilter').value;
     const search = document.getElementById('searchInput').value.toLowerCase();
-    const now = new Date(), todayStr = now.toLocaleDateString('en-GB'), thisMonth = now.getMonth() + 1;
+    
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('en-GB'); 
+    const thisMonth = now.getMonth() + 1;
 
     const firstRow = rawData[0] || {};
-    const dK = Object.keys(firstRow).find(k => k.includes("วัน")), tK = Object.keys(firstRow).find(k => k.includes("เวลา"));
-    const sK = Object.keys(firstRow).find(k => k.includes("ชื่อ")) || "", dpK = Object.keys(firstRow).find(k => k.includes("แผนก")) || "";
+    const dK = Object.keys(firstRow).find(k => k.includes("วัน")) || "";
+    const tK = Object.keys(firstRow).find(k => k.includes("เวลา")) || "";
+    const sK = Object.keys(firstRow).find(k => k.includes("ชื่อ")) || "";
+    const dpK = Object.keys(firstRow).find(k => k.includes("แผนก")) || "";
 
     filteredData = rawData.filter(row => {
-        let mD = (range === 'all') || (range === 'today' && String(row[dK]).includes(todayStr)) || (range === 'thisMonth' && parseInt(String(row[dK]).split(/[\/\-]/)[1]) === thisMonth);
-        let mS = (shift === 'all') || getShift(row[tK]) === shift;
+        let mDate = (range === 'all') || 
+                    (range === 'today' && String(row[dK]).includes(todayStr)) || 
+                    (range === 'thisMonth' && String(row[dK]).includes(`/${thisMonth}/`));
+        let mShift = (shift === 'all') || getShift(row[tK]) === shift;
         let mSearch = Object.values(row).some(v => String(v).toLowerCase().includes(search));
-        return mD && mS && mSearch;
+        return mDate && mShift && mSearch;
     });
+
     currentPage = 1;
-    updateUI(sK, dpK, tK);
+    updateDashboard(sK, dpK, tK);
 }
 
-function updateUI(sK, dpK, tK) {
+function updateDashboard(sK, dpK, tK) {
     document.getElementById('totalJobs').innerText = filteredData.length;
+    document.getElementById('dataCount').innerText = `${filteredData.length} รายการ`;
+
     const sMap = {}, dMap = {}, relMap = {};
     filteredData.forEach(r => {
         const s = r[sK] || "ไม่ระบุ", d = r[dpK] || "ไม่ระบุ";
-        sMap[s] = (sMap[s] || 0) + 1; dMap[d] = (dMap[d] || 0) + 1;
-        if(!relMap[s]) relMap[s] = {}; relMap[s][d] = (relMap[s][d] || 0) + 1;
+        sMap[s] = (sMap[s] || 0) + 1;
+        dMap[d] = (dMap[d] || 0) + 1;
+        if(!relMap[s]) relMap[s] = {};
+        relMap[s][d] = (relMap[s][d] || 0) + 1;
     });
+
     const sortedS = Object.keys(sMap).sort((a,b) => sMap[b] - sMap[a]);
+    const sortedD = Object.keys(dMap).sort((a,b) => dMap[b] - dMap[a]);
+
     document.getElementById('topStaff').innerText = sortedS[0] || "-";
-    document.getElementById('bottomStaff').innerText = sortedS[sortedS.length-1] || "-";
-    renderCharts(sMap, dMap); renderRelTable(sMap, dMap, relMap); renderTable(tK); renderPagination(tK);
+    document.getElementById('topDept').innerText = sortedD[0] || "-";
+
+    renderCharts(sMap, dMap);
+    renderRelTable(sMap, dMap, relMap);
+    renderMainTable(tK);
+    renderPagination(tK);
 }
 
 function renderCharts(sMap, dMap) {
-    const draw = (map, id, color) => {
-        if (charts[id]) charts[id].destroy();
-        const labels = Object.keys(map).sort((a,b) => map[b] - map[a]).slice(0, 5);
-        charts[id] = new Chart(document.getElementById(id), {
-            type: 'bar',
-            data: { labels, datasets: [{ data: labels.map(l => map[l]), backgroundColor: color, borderRadius: 6 }] },
-            options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-    };
-    draw(sMap, 'staffChart', '#3b82f6'); draw(dMap, 'deptChart', '#10b981');
+    const ctxS = document.getElementById('staffChart').getContext('2d');
+    const ctxD = document.getElementById('deptChart').getContext('2d');
+
+    if(charts.S) charts.S.destroy();
+    const sLabels = Object.keys(sMap).sort((a,b) => sMap[b] - sMap[a]).slice(0, 8);
+    charts.S = new Chart(ctxS, {
+        type: 'bar',
+        data: {
+            labels: sLabels,
+            datasets: [{
+                label: 'จำนวนงาน',
+                data: sLabels.map(l => sMap[l]),
+                backgroundColor: '#3b82f6',
+                borderRadius: 10,
+                barThickness: 20
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { grid: { display: false }, ticks: { font: { family: 'Sarabun' } } }, y: { grid: { display: false }, ticks: { font: { family: 'Sarabun' } } } }
+        }
+    });
+
+    if(charts.D) charts.D.destroy();
+    const dLabels = Object.keys(dMap).sort((a,b) => dMap[b] - dMap[a]).slice(0, 5);
+    charts.D = new Chart(ctxD, {
+        type: 'doughnut',
+        data: {
+            labels: dLabels,
+            datasets: [{
+                data: dLabels.map(l => dMap[l]),
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6366f1'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { family: 'Sarabun', size: 11 } } } }
+        }
+    });
 }
 
 function renderRelTable(sMap, dMap, relMap) {
     const container = document.getElementById('relationTableContainer');
     const staffs = Object.keys(sMap).sort((a,b) => sMap[b] - sMap[a]);
     const depts = Object.keys(dMap).sort((a,b) => dMap[b] - dMap[a]);
-    if (!staffs.length) { container.innerHTML = "<p style='padding:20px;text-align:center;'>ไม่มีข้อมูล</p>"; return; }
-    let html = `<table class="rel-table"><thead><tr><th>ชื่อพลทหาร</th>${depts.map(d => `<th>${d}</th>`).join('')}<th class="total-col">รวม</th></tr></thead><tbody>`;
+    
+    if (!staffs.length) { container.innerHTML = "<p style='padding:40px; text-align:center; color:#94a3b8;'>ไม่พบข้อมูล</p>"; return; }
+
+    let html = `<table class="rel-table"><thead><tr><th>พลเปล / แผนก</th>`;
+    depts.forEach(d => html += `<th>${d}</th>`);
+    html += `<th style="background:#f1f5f9; position:sticky; right:0; z-index:11;">รวม</th></tr></thead><tbody>`;
+
     staffs.forEach(s => {
-        html += `<tr><td>${s}</td>${depts.map(d => {
-            const v = (relMap[s] && relMap[s][d]) || 0;
-            return `<td class="${v > 0 ? 'count-cell' : 'count-zero'}">${v}</td>`;
-        }).join('')}<td class="total-col">${sMap[s]}</td></tr>`;
+        html += `<tr><td>${s}</td>`;
+        depts.forEach(d => {
+            const val = (relMap[s] && relMap[s][d]) || 0;
+            html += `<td class="${val > 0 ? 'count-cell' : 'count-zero'}">${val}</td>`;
+        });
+        html += `<td style="font-weight:bold; background:#f1f5f9; position:sticky; right:0; z-index:5;">${sMap[s]}</td></tr>`;
     });
     container.innerHTML = html + "</tbody></table>";
 }
 
-function renderTable(tK) {
+function renderMainTable(tK) {
     const body = document.getElementById('tableBody'), head = document.getElementById('tableHead');
-    if (!filteredData.length) { body.innerHTML = "<tr><td colspan='10' style='text-align:center;'>ไม่พบข้อมูล</td></tr>"; return; }
-    const start = (currentPage - 1) * rowsPerPage, items = filteredData.slice(start, start + rowsPerPage);
-    const headers = Object.keys(filteredData[0]).filter(h => !h.includes("Timestamp"));
-    head.innerHTML = `<th>ลำดับ</th>` + headers.map(h => `<th>${h}</th>`).join('') + `<th>กะ</th>`;
+    if (!filteredData.length) { body.innerHTML = "<tr><td colspan='15' style='padding:50px; text-align:center;'>ไม่มีข้อมูลที่ตรงตามเงื่อนไข</td></tr>"; return; }
+
+    const start = (currentPage - 1) * rowsPerPage;
+    const items = filteredData.slice(start, start + rowsPerPage);
+    const headers = Object.keys(filteredData[0]).filter(h => !h.toLowerCase().includes("timestamp"));
+
+    head.innerHTML = `<th style="padding:15px; width:50px;">#</th>` + headers.map(h => `<th>${h}</th>`).join('') + `<th>กะ</th>`;
+    
     body.innerHTML = items.map((row, i) => {
-        const s = getShift(row[tK]), b = s === 'morning' ? 'shift-morning">เช้า' : (s === 'afternoon' ? 'shift-afternoon">บ่าย' : 'shift-night">ดึก');
-        return `<tr><td>${start+i+1}</td>${headers.map(h => `<td>${row[h] || '-'}</td>`).join('')}<td><span class="badge-shift ${b}</span></td></tr>`;
+        const s = getShift(row[tK]);
+        const badge = s === 'morning' ? 'shift-morning">เช้า' : (s === 'afternoon' ? 'shift-afternoon">บ่าย' : 'shift-night">ดึก');
+        return `<tr style="border-bottom:1px solid #f1f5f9; transition:0.2s;">
+            <td style="padding:15px; text-align:center; font-weight:bold; color:#94a3b8;">${start+i+1}</td>
+            ${headers.map(h => `<td style="padding:15px;">${row[h] || '-'}</td>`).join('')}
+            <td style="padding:15px;"><span class="badge-shift ${badge}</span></td>
+        </tr>`;
     }).join('');
 }
 
 function renderPagination(tK) {
     const container = document.getElementById('pagination'), total = Math.ceil(filteredData.length / rowsPerPage);
     container.innerHTML = ""; if (total <= 1) return;
-    for (let i = 1; i <= total; i++) {
-        const btn = document.createElement('button'); btn.innerText = i; btn.style = "padding:8px 15px; border:1px solid #ddd; cursor:pointer; background:" + (i === currentPage ? "#3b82f6; color:white;" : "white;");
-        btn.onclick = () => { currentPage = i; renderTable(tK); renderPagination(tK); }; container.appendChild(btn);
+
+    const createBtn = (num, text, active = false) => {
+        const btn = document.createElement('button');
+        btn.innerText = text || num;
+        btn.style = `padding:8px 12px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer; font-weight:700; transition:0.3s; ` + 
+                    (active ? "background:var(--accent); color:white; border-color:var(--accent);" : "background:white; color:#64748b;");
+        btn.onclick = () => { currentPage = num; renderMainTable(tK); renderPagination(tK); window.scrollTo({top: 800, behavior: 'smooth'}); };
+        return btn;
+    };
+
+    container.appendChild(createBtn(1, "หน้าแรก", currentPage === 1));
+    
+    // แสดงเฉพาะหน้าปัจจุบัน และหน้าข้างๆ เพื่อไม่ให้ล้น
+    for (let i = Math.max(1, currentPage - 2); i <= Math.min(total, currentPage + 2); i++) {
+        if(i !== 1 && i !== total) container.appendChild(createBtn(i, i, i === currentPage));
     }
+    
+    if(total > 1) container.appendChild(createBtn(total, "หน้าสุดท้าย", currentPage === total));
 }
+
 loadData();
 </script>
 </body>
